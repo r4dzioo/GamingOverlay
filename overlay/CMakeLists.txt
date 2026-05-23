@@ -97,7 +97,6 @@ target_link_libraries(Overlay PRIVATE
     dbghelp
     pdh
     psapi
-    iphlpapi
     winmm
 )
 

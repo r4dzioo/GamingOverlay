@@ -3,8 +3,6 @@
 #include "Overlay/Log.h"
 
 #include <windows.h>
-#include <icmpapi.h>
-#include <iphlpapi.h>
 
 #include <chrono>
 
@@ -82,33 +80,7 @@ void TelemetryService::SampleMemory(MetricSnapshot& snapshot) {
 }
 
 void TelemetryService::SamplePing(MetricSnapshot& snapshot) {
-    HANDLE icmp = IcmpCreateFile();
-    if (icmp == INVALID_HANDLE_VALUE) {
-        return;
-    }
-
-    constexpr IPAddr target = 0x01010101; // 1.1.1.1 in network byte order.
-    char payload[] = "GamingOverlay";
-    char reply_buffer[sizeof(ICMP_ECHO_REPLY) + sizeof(payload) + 32]{};
-
-    const DWORD result = IcmpSendEcho(
-        icmp,
-        target,
-        payload,
-        static_cast<WORD>(sizeof(payload)),
-        nullptr,
-        reply_buffer,
-        static_cast<DWORD>(sizeof(reply_buffer)),
-        100);
-
-    if (result > 0) {
-        auto* reply = reinterpret_cast<ICMP_ECHO_REPLY*>(reply_buffer);
-        if (reply->Status == IP_SUCCESS) {
-            snapshot.ping_ms = static_cast<float>(reply->RoundTripTime);
-        }
-    }
-
-    IcmpCloseHandle(icmp);
+    snapshot.ping_ms = 0.0f;
 }
 
 } // namespace overlay::Telemetry
