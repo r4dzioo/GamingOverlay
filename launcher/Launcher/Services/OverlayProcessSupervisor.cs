@@ -1,0 +1,91 @@
+using System.Diagnostics;
+
+namespace Launcher.Services;
+
+public sealed class OverlayProcessSupervisor
+{
+    private readonly string _appDirectory;
+    private readonly LauncherSettings _settings;
+    private Process? _process;
+
+    public OverlayProcessSupervisor(string appDirectory, LauncherSettings settings)
+    {
+        _appDirectory = appDirectory;
+        _settings = settings;
+    }
+
+    public event EventHandler<string>? OverlayExited;
+
+    public void Start()
+    {
+        if (_process is { HasExited: false })
+        {
+            return;
+        }
+
+        string path = Path.Combine(_appDirectory, _settings.OverlayExecutable);
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException("Overlay executable was not found.", path);
+        }
+
+        _process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = path,
+                WorkingDirectory = _appDirectory,
+                UseShellExecute = false
+            },
+            EnableRaisingEvents = true
+        };
+
+        _process.Exited += (_, _) =>
+        {
+            int exitCode = _process?.ExitCode ?? -1;
+            string message = exitCode == 0
+                ? "Overlay exited normally."
+                : $"Overlay crashed or stopped unexpectedly. Exit code: {exitCode}.";
+            AppendCrashLog(message);
+            OverlayExited?.Invoke(this, message);
+
+            if (_settings.RestartOnCrash && exitCode != 0)
+            {
+                Start();
+            }
+        };
+
+        _process.Start();
+    }
+
+    public async Task StopAsync()
+    {
+        if (_process is not { HasExited: false })
+        {
+            return;
+        }
+
+        try
+        {
+            _process.CloseMainWindow();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            await _process.WaitForExitAsync(timeout.Token);
+        }
+        catch
+        {
+            if (_process is { HasExited: false })
+            {
+                _process.Kill(entireProcessTree: true);
+            }
+        }
+    }
+
+    private void AppendCrashLog(string message)
+    {
+        string logDir = Path.Combine(_appDirectory, "logs");
+        Directory.CreateDirectory(logDir);
+        string line = $"[{DateTimeOffset.Now:O}] {message}{Environment.NewLine}";
+        File.AppendAllText(Path.Combine(logDir, "launcher.log"), line);
+    }
+}
+

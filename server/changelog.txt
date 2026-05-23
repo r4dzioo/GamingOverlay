@@ -1,0 +1,11 @@
+GamingOverlay 1.0.0
+
+- Added DX11 transparent overlay renderer with Dear ImGui.
+- Added FPS, frametime, CPU, GPU, RAM, and network widgets.
+- Added async telemetry collection on a dedicated worker thread.
+- Added launcher update checks using latest.json and GitHub Releases.
+- Added ZIP validation with SHA-256.
+- Added crash logging and minidump generation.
+- Added Inno Setup bootstrap installer.
+- Added GitHub Actions release pipeline.
+
