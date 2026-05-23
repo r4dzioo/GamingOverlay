@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json.Serialization;
 
 namespace Launcher.Services;
@@ -20,9 +21,8 @@ public sealed class VersionManifest
     public string MinLauncherVersion { get; set; } = "1.0.0";
 
     [JsonIgnore]
-    public Version VersionValue => Version.TryParse(Version.TrimStart('v', 'V'), out var value) ? value : new Version(0, 0, 0);
+    public System.Version VersionValue => System.Version.TryParse(Version.TrimStart('v', 'V'), out var value) ? value : new System.Version(0, 0, 0);
 
     [JsonIgnore]
     public string ChangelogText => string.IsNullOrWhiteSpace(Changelog) ? "No changelog was published for this release." : Changelog;
 }
-

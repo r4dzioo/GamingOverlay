@@ -1,10 +1,11 @@
+using System.IO;
 using System.Text.Json;
 
 namespace Launcher.Services;
 
 public sealed class LauncherSettings
 {
-    public string ManifestUrl { get; set; } = "https://github.com/USERNAME/REPO/releases/latest/download/latest.json";
+    public string ManifestUrl { get; set; } = "https://github.com/r4dzioo/GamingOverlay/releases/latest/download/latest.json";
     public string OverlayExecutable { get; set; } = "Overlay.exe";
     public string LocalVersionFile { get; set; } = "version.txt";
     public bool RestartOnCrash { get; set; }
@@ -26,4 +27,3 @@ public sealed class LauncherSettings
         return JsonSerializer.Deserialize<LauncherSettings>(json, options) ?? new LauncherSettings();
     }
 }
-

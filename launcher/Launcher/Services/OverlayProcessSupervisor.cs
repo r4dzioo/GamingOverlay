@@ -1,4 +1,8 @@
+using System;
 using System.Diagnostics;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Launcher.Services;
 
@@ -88,4 +92,3 @@ public sealed class OverlayProcessSupervisor
         File.AppendAllText(Path.Combine(logDir, "launcher.log"), line);
     }
 }
-
