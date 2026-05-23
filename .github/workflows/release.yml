@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Checkout
@@ -82,4 +82,3 @@ jobs:
             releases/Setup.exe
             releases/latest.json
             server/changelog.txt
-
