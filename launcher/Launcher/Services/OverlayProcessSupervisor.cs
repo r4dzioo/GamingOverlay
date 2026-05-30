@@ -21,6 +21,21 @@ public sealed class OverlayProcessSupervisor
 
     public event EventHandler<string>? OverlayExited;
 
+    public string DescribeInstall()
+    {
+        string overlayPath = Path.Combine(_appDirectory, _settings.OverlayExecutable);
+        string versionPath = Path.Combine(_appDirectory, _settings.LocalVersionFile);
+        string version = File.Exists(versionPath) ? File.ReadAllText(versionPath).Trim() : "unknown";
+
+        if (!File.Exists(overlayPath))
+        {
+            return $"Overlay executable is missing: {overlayPath}";
+        }
+
+        var info = new FileInfo(overlayPath);
+        return $"Overlay ready: {overlayPath}{Environment.NewLine}Version: {version}{Environment.NewLine}Size: {info.Length / 1024} KB";
+    }
+
     public void Start()
     {
         if (_process is { HasExited: false })
@@ -31,7 +46,7 @@ public sealed class OverlayProcessSupervisor
         string path = Path.Combine(_appDirectory, _settings.OverlayExecutable);
         if (!File.Exists(path))
         {
-            throw new FileNotFoundException("Overlay executable was not found.", path);
+            throw new FileNotFoundException($"Overlay executable was not found at {path}. Run update or reinstall Setup.exe.", path);
         }
 
         _process = new Process

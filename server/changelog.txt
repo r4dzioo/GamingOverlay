@@ -1,5 +1,8 @@
-GamingOverlay 1.0.4
+GamingOverlay 1.0.5
 
+- Launcher now restarts itself automatically after a successful update.
+- Launcher now displays the exact Overlay.exe path, version, and file size before launch.
+- Improved missing Overlay.exe error text with the full expected path.
 - Changed Overlay.zip to an overlay-only update package so the running launcher does not overwrite its own loaded files.
 - Fixed release build CRT mismatch between Overlay.exe and imgui.lib.
 - Added DX11 hardware-to-WARP fallback so Overlay.exe can start on more systems.

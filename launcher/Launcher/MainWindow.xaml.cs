@@ -2,6 +2,8 @@ using Launcher.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -32,6 +34,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _settings = LauncherSettings.Load(AppContext.BaseDirectory);
         _updateService = new UpdateService(AppContext.BaseDirectory, _settings);
         _overlay = new OverlayProcessSupervisor(AppContext.BaseDirectory, _settings);
+        OverlayState = _overlay.DescribeInstall();
         _overlay.OverlayExited += (_, message) =>
         {
             Dispatcher.Invoke(() =>
@@ -111,8 +114,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             VersionText = $"Installed {manifest.Version} | Latest {manifest.Version}";
             PrimaryButtonText = "Launch overlay";
             StatusText = "Updated";
-            ProgressText = "Update installed";
+            ProgressText = "Update installed. Restarting launcher...";
             Progress = 100;
+
+            RestartLauncher();
         });
     }
 
@@ -120,6 +125,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         try
         {
+            OverlayState = _overlay.DescribeInstall();
             _overlay.Start();
             OverlayState = "Overlay is running. Use Insert/F10/F11 hotkeys in-game.";
             StatusText = "Overlay running";
@@ -129,6 +135,22 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             OverlayState = ex.Message;
             StatusText = "Launch failed";
         }
+    }
+
+    private void RestartLauncher()
+    {
+        string launcherPath = Path.Combine(AppContext.BaseDirectory, "Launcher.exe");
+        if (File.Exists(launcherPath))
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = launcherPath,
+                WorkingDirectory = AppContext.BaseDirectory,
+                UseShellExecute = true
+            });
+        }
+
+        Application.Current.Shutdown();
     }
 
     private async Task RunBusyAsync(Func<Task> action)
