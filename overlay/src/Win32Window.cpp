@@ -191,6 +191,9 @@ LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT message, WPARAM wparam,
         auto* create = reinterpret_cast<CREATESTRUCTW*>(lparam);
         window = static_cast<Win32Window*>(create->lpCreateParams);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
+        if (window) {
+            window->hwnd_ = hwnd;
+        }
     } else {
         window = reinterpret_cast<Win32Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     }

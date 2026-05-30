@@ -1,5 +1,6 @@
-GamingOverlay 1.0.6
+GamingOverlay 1.0.7
 
+- Fixed Win32 window creation failing with GetLastError=1400 by assigning hwnd during WM_NCCREATE.
 - Overlay window creation now falls back through multiple Win32 modes instead of exiting immediately.
 - Overlay logs exact GetLastError values for failed window creation attempts.
 - Added an Uninstall button in the launcher.
