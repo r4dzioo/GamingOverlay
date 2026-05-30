@@ -101,6 +101,7 @@ target_link_libraries(Overlay PRIVATE
 )
 
 if(MSVC)
+    set_property(TARGET Overlay PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     target_compile_options(Overlay PRIVATE /W4 /permissive- /EHsc /utf-8)
     target_link_options(Overlay PRIVATE /SUBSYSTEM:WINDOWS)
 endif()

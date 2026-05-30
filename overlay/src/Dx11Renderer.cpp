@@ -1,12 +1,26 @@
 #include "Overlay/Dx11Renderer.h"
 
+#include "Overlay/Log.h"
+
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
+#include <iomanip>
 #include <iterator>
+#include <sstream>
 
 namespace overlay {
+
+namespace {
+
+std::wstring HResultText(HRESULT hr) {
+    std::wstringstream stream;
+    stream << L"0x" << std::hex << std::uppercase << static_cast<unsigned long>(hr);
+    return stream.str();
+}
+
+} // namespace
 
 Dx11Renderer::~Dx11Renderer() {
     Shutdown();
@@ -128,7 +142,7 @@ bool Dx11Renderer::CreateDeviceAndSwapChain(HWND hwnd) {
     desc.SampleDesc.Quality = 0;
     desc.Windowed = TRUE;
     desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+    desc.Flags = 0;
 
     UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
@@ -136,28 +150,52 @@ bool Dx11Renderer::CreateDeviceAndSwapChain(HWND hwnd) {
 #endif
 
     constexpr D3D_FEATURE_LEVEL feature_levels[] = {
-        D3D_FEATURE_LEVEL_11_1,
         D3D_FEATURE_LEVEL_11_0,
         D3D_FEATURE_LEVEL_10_1,
         D3D_FEATURE_LEVEL_10_0,
     };
 
-    D3D_FEATURE_LEVEL selected_level{};
-    const HRESULT hr = D3D11CreateDeviceAndSwapChain(
-        nullptr,
+    constexpr D3D_DRIVER_TYPE drivers[] = {
         D3D_DRIVER_TYPE_HARDWARE,
-        nullptr,
-        flags,
-        feature_levels,
-        static_cast<UINT>(std::size(feature_levels)),
-        D3D11_SDK_VERSION,
-        &desc,
-        swap_chain_.GetAddressOf(),
-        device_.GetAddressOf(),
-        &selected_level,
-        context_.GetAddressOf());
+        D3D_DRIVER_TYPE_WARP,
+    };
 
-    return SUCCEEDED(hr);
+    HRESULT last_hr = E_FAIL;
+    for (const D3D_DRIVER_TYPE driver : drivers) {
+        D3D_FEATURE_LEVEL selected_level{};
+        swap_chain_.Reset();
+        device_.Reset();
+        context_.Reset();
+
+        const HRESULT hr = D3D11CreateDeviceAndSwapChain(
+            nullptr,
+            driver,
+            nullptr,
+            flags,
+            feature_levels,
+            static_cast<UINT>(std::size(feature_levels)),
+            D3D11_SDK_VERSION,
+            &desc,
+            swap_chain_.GetAddressOf(),
+            device_.GetAddressOf(),
+            &selected_level,
+            context_.GetAddressOf());
+
+        if (SUCCEEDED(hr)) {
+            const std::wstring level_text = std::to_wstring(static_cast<unsigned int>(selected_level));
+            Log::Info((driver == D3D_DRIVER_TYPE_HARDWARE
+                    ? L"DirectX 11 renderer initialized with hardware device. Feature level "
+                    : L"DirectX 11 renderer initialized with WARP fallback device. Feature level ") +
+                level_text);
+            return true;
+        }
+
+        last_hr = hr;
+        Log::Warn(L"D3D11CreateDeviceAndSwapChain failed with HRESULT " + HResultText(hr));
+    }
+
+    Log::Error(L"Failed to create any DirectX 11 device. Last HRESULT " + HResultText(last_hr));
+    return false;
 }
 
 bool Dx11Renderer::CreateRenderTarget() {

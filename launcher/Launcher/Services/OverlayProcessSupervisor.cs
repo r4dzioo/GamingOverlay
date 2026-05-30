@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,7 +50,7 @@ public sealed class OverlayProcessSupervisor
             int exitCode = _process?.ExitCode ?? -1;
             string message = exitCode == 0
                 ? "Overlay exited normally."
-                : $"Overlay crashed or stopped unexpectedly. Exit code: {exitCode}.";
+                : $"Overlay crashed or stopped unexpectedly. Exit code: {exitCode}.{ReadOverlayLogTail()}";
             AppendCrashLog(message);
             OverlayExited?.Invoke(this, message);
 
@@ -90,5 +91,19 @@ public sealed class OverlayProcessSupervisor
         Directory.CreateDirectory(logDir);
         string line = $"[{DateTimeOffset.Now:O}] {message}{Environment.NewLine}";
         File.AppendAllText(Path.Combine(logDir, "launcher.log"), line);
+    }
+
+    private string ReadOverlayLogTail()
+    {
+        string path = Path.Combine(_appDirectory, "logs", "overlay.log");
+        if (!File.Exists(path))
+        {
+            return string.Empty;
+        }
+
+        string[] lines = File.ReadLines(path).TakeLast(12).ToArray();
+        return lines.Length == 0
+            ? string.Empty
+            : $"{Environment.NewLine}{string.Join(Environment.NewLine, lines)}";
     }
 }

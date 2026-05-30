@@ -1,11 +1,7 @@
-GamingOverlay 1.0.0
+GamingOverlay 1.0.2
 
-- Added DX11 transparent overlay renderer with Dear ImGui.
-- Added FPS, frametime, CPU, GPU, RAM, and network widgets.
-- Added async telemetry collection on a dedicated worker thread.
-- Added launcher update checks using latest.json and GitHub Releases.
-- Added ZIP validation with SHA-256.
-- Added crash logging and minidump generation.
-- Added Inno Setup bootstrap installer.
-- Added GitHub Actions release pipeline.
-
+- Added DX11 hardware-to-WARP fallback so Overlay.exe can start on more systems.
+- Removed brittle DXGI mode-switch swap-chain flag from the transparent overlay path.
+- Statically linked the native overlay MSVC runtime.
+- Launcher now shows the tail of overlay.log when Overlay.exe exits unexpectedly.
+- Keeps the full v1.0.0 overlay, launcher, installer, and update pipeline scaffold.
