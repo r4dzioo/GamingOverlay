@@ -1,5 +1,5 @@
 #define MyAppName "GamingOverlay"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.6"
 #define MyAppPublisher "GamingOverlay"
 #define MyAppExeName "Launcher.exe"
 
@@ -33,6 +33,7 @@ Source: "..\releases\package\*"; DestDir: "{app}"; Flags: ignoreversion recurses
 
 [Icons]
 Name: "{group}\GamingOverlay"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\Uninstall GamingOverlay"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\GamingOverlay"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]

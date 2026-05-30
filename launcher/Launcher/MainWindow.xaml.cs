@@ -74,6 +74,20 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         await CheckForUpdatesAsync();
     }
 
+    private void UninstallButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _overlay.StartUninstall();
+            Application.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            OverlayState = ex.Message;
+            StatusText = "Uninstall failed";
+        }
+    }
+
     private async Task CheckForUpdatesAsync()
     {
         await RunBusyAsync(async () =>

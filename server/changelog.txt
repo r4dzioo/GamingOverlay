@@ -1,5 +1,10 @@
-GamingOverlay 1.0.5
+GamingOverlay 1.0.6
 
+- Overlay window creation now falls back through multiple Win32 modes instead of exiting immediately.
+- Overlay logs exact GetLastError values for failed window creation attempts.
+- Added an Uninstall button in the launcher.
+- Added a Start Menu uninstall shortcut.
+- Installer version now matches the release version.
 - Launcher now restarts itself automatically after a successful update.
 - Launcher now displays the exact Overlay.exe path, version, and file size before launch.
 - Improved missing Overlay.exe error text with the full expected path.

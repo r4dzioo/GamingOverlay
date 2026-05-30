@@ -78,6 +78,25 @@ public sealed class OverlayProcessSupervisor
         _process.Start();
     }
 
+    public void StartUninstall()
+    {
+        string uninstaller = Directory.EnumerateFiles(_appDirectory, "unins*.exe")
+            .OrderBy(path => path)
+            .FirstOrDefault() ?? Path.Combine(_appDirectory, "unins000.exe");
+
+        if (!File.Exists(uninstaller))
+        {
+            throw new FileNotFoundException($"Uninstaller was not found at {uninstaller}.", uninstaller);
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = uninstaller,
+            WorkingDirectory = _appDirectory,
+            UseShellExecute = true
+        });
+    }
+
     public async Task StopAsync()
     {
         if (_process is not { HasExited: false })

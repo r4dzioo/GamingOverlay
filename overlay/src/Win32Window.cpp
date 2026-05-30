@@ -1,16 +1,30 @@
 #include "Overlay/Win32Window.h"
 
+#include "Overlay/Log.h"
+
 #include <dwmapi.h>
 #include <imgui.h>
 #include <imgui_impl_win32.h>
+#include <sstream>
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
-#ifndef WDA_EXCLUDEFROMCAPTURE
-#define WDA_EXCLUDEFROMCAPTURE 0x00000011
-#endif
-
 namespace overlay {
+
+namespace {
+
+std::wstring LastErrorText(const wchar_t* operation) {
+    const DWORD error = GetLastError();
+    std::wstringstream stream;
+    stream << operation << L" failed with GetLastError=" << error;
+    return stream.str();
+}
+
+bool IsLayered(HWND hwnd) {
+    return (GetWindowLongPtrW(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) != 0;
+}
+
+} // namespace
 
 Win32Window::~Win32Window() {
     Destroy();
@@ -28,33 +42,73 @@ bool Win32Window::Create(HINSTANCE instance, int show_command, ResizeCallback re
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.lpszClassName = L"GamingOverlay.TransparentWindow";
 
-    RegisterClassExW(&wc);
+    if (!RegisterClassExW(&wc)) {
+        const DWORD error = GetLastError();
+        if (error != ERROR_CLASS_ALREADY_EXISTS) {
+            Log::Error(LastErrorText(L"RegisterClassExW"));
+            return false;
+        }
+    }
 
-    ResizeToVirtualDesktop();
+    const int primary_width = GetSystemMetrics(SM_CXSCREEN);
+    const int primary_height = GetSystemMetrics(SM_CYSCREEN);
+    width_ = static_cast<UINT>(primary_width > 0 ? primary_width : 1280);
+    height_ = static_cast<UINT>(primary_height > 0 ? primary_height : 720);
 
-    const DWORD ex_style = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT;
-    hwnd_ = CreateWindowExW(
-        ex_style,
-        wc.lpszClassName,
-        L"GamingOverlay",
-        WS_POPUP,
-        GetSystemMetrics(SM_XVIRTUALSCREEN),
-        GetSystemMetrics(SM_YVIRTUALSCREEN),
-        static_cast<int>(width_),
-        static_cast<int>(height_),
-        nullptr,
-        nullptr,
-        instance_,
-        this);
+    struct WindowAttempt final {
+        DWORD ex_style;
+        DWORD style;
+        int x;
+        int y;
+        int width;
+        int height;
+        const wchar_t* name;
+    };
+
+    const WindowAttempt attempts[] = {
+        {WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT, WS_POPUP, 0, 0, static_cast<int>(width_), static_cast<int>(height_), L"layered click-through overlay"},
+        {WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW, WS_POPUP, 0, 0, static_cast<int>(width_), static_cast<int>(height_), L"layered interactive overlay"},
+        {WS_EX_TOPMOST | WS_EX_TOOLWINDOW, WS_POPUP, 0, 0, static_cast<int>(width_), static_cast<int>(height_), L"plain topmost overlay"},
+        {0, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 960, 540, L"diagnostic window"},
+    };
+
+    for (const auto& attempt : attempts) {
+        hwnd_ = CreateWindowExW(
+            attempt.ex_style,
+            wc.lpszClassName,
+            L"GamingOverlay",
+            attempt.style,
+            attempt.x,
+            attempt.y,
+            attempt.width,
+            attempt.height,
+            nullptr,
+            nullptr,
+            instance_,
+            this);
+
+        if (hwnd_) {
+            Log::Info(std::wstring(L"Created overlay window using mode: ") + attempt.name);
+            break;
+        }
+
+        Log::Warn(std::wstring(L"CreateWindowExW failed for mode: ") + attempt.name + L". " + LastErrorText(L"CreateWindowExW"));
+    }
 
     if (!hwnd_) {
+        Log::Error(L"All overlay window creation attempts failed.");
         return false;
     }
 
-    MARGINS margins{-1};
-    DwmExtendFrameIntoClientArea(hwnd_, &margins);
+    if (IsLayered(hwnd_)) {
+        MARGINS margins{-1};
+        const HRESULT hr = DwmExtendFrameIntoClientArea(hwnd_, &margins);
+        if (FAILED(hr)) {
+            Log::Warn(L"DwmExtendFrameIntoClientArea failed.");
+        }
+    }
+
     SetOpacity(1.0f);
-    SetWindowDisplayAffinity(hwnd_, WDA_EXCLUDEFROMCAPTURE);
     ShowWindow(hwnd_, show_command);
     UpdateWindow(hwnd_);
     SetTopMost();
@@ -99,29 +153,32 @@ void Win32Window::SetTopMost() {
     if (!hwnd_) {
         return;
     }
+
     SetWindowPos(
         hwnd_,
         HWND_TOPMOST,
-        GetSystemMetrics(SM_XVIRTUALSCREEN),
-        GetSystemMetrics(SM_YVIRTUALSCREEN),
+        0,
+        0,
         static_cast<int>(width_),
         static_cast<int>(height_),
         SWP_NOACTIVATE | SWP_SHOWWINDOW);
 }
 
 void Win32Window::SetOpacity(float opacity) {
-    if (!hwnd_) {
+    if (!hwnd_ || !IsLayered(hwnd_)) {
         return;
     }
 
     opacity = opacity < 0.05f ? 0.05f : (opacity > 1.0f ? 1.0f : opacity);
     const BYTE alpha = static_cast<BYTE>(opacity * 255.0f);
-    SetLayeredWindowAttributes(hwnd_, 0, alpha, LWA_ALPHA);
+    if (!SetLayeredWindowAttributes(hwnd_, 0, alpha, LWA_ALPHA)) {
+        Log::Warn(LastErrorText(L"SetLayeredWindowAttributes"));
+    }
 }
 
 void Win32Window::ResizeToVirtualDesktop() {
-    width_ = static_cast<UINT>(GetSystemMetrics(SM_CXVIRTUALSCREEN));
-    height_ = static_cast<UINT>(GetSystemMetrics(SM_CYVIRTUALSCREEN));
+    width_ = static_cast<UINT>(GetSystemMetrics(SM_CXSCREEN));
+    height_ = static_cast<UINT>(GetSystemMetrics(SM_CYSCREEN));
 }
 
 LRESULT CALLBACK Win32Window::WindowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {

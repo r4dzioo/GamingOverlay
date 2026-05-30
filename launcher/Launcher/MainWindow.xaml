@@ -127,6 +127,13 @@
                             Foreground="{StaticResource TextPrimary}"
                             IsEnabled="{Binding CanRunPrimaryAction}"
                             Click="CheckButton_Click"/>
+                    <Button Content="Uninstall"
+                            Margin="0,12,0,0"
+                            Background="#2A1420"
+                            BorderBrush="#593146"
+                            Foreground="{StaticResource TextPrimary}"
+                            IsEnabled="{Binding CanRunPrimaryAction}"
+                            Click="UninstallButton_Click"/>
                 </StackPanel>
             </Border>
         </Grid>
@@ -145,4 +152,3 @@
         </StackPanel>
     </Grid>
 </Window>
-
