@@ -50,8 +50,14 @@ jobs:
       - name: Package update ZIP
         shell: pwsh
         run: |
+          $updateDir = "releases/update"
+          if (Test-Path $updateDir) { Remove-Item $updateDir -Recurse -Force }
+          New-Item -ItemType Directory -Path $updateDir | Out-Null
+          Copy-Item build/overlay/Release/Overlay.exe "$updateDir/Overlay.exe" -Force
+          Copy-Item overlay/assets "$updateDir/assets" -Recurse -Force
+          Set-Content "$updateDir/version.txt" "${{ steps.version.outputs.version }}"
           if (Test-Path releases/Overlay.zip) { Remove-Item releases/Overlay.zip -Force }
-          Compress-Archive -Path releases/package/* -DestinationPath releases/Overlay.zip -CompressionLevel Optimal
+          Compress-Archive -Path "$updateDir/*" -DestinationPath releases/Overlay.zip -CompressionLevel Optimal
           $hash = (Get-FileHash releases/Overlay.zip -Algorithm SHA256).Hash.ToLowerInvariant()
           $download = "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/Overlay.zip"
           $manifest = [ordered]@{

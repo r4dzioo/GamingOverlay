@@ -1,5 +1,6 @@
-GamingOverlay 1.0.3
+GamingOverlay 1.0.4
 
+- Changed Overlay.zip to an overlay-only update package so the running launcher does not overwrite its own loaded files.
 - Fixed release build CRT mismatch between Overlay.exe and imgui.lib.
 - Added DX11 hardware-to-WARP fallback so Overlay.exe can start on more systems.
 - Removed brittle DXGI mode-switch swap-chain flag from the transparent overlay path.
