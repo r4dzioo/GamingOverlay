@@ -13,6 +13,7 @@ public:
     bool Initialize(const std::filesystem::path& optional_csv_path);
     void Shutdown();
     void Sample(MetricSnapshot& snapshot);
+    void RecordFrameTime(float frametime_ms);
 
 private:
     void PushFrametime(float ms, MetricSnapshot& snapshot);
@@ -26,4 +27,3 @@ private:
 };
 
 } // namespace overlay::Telemetry
-

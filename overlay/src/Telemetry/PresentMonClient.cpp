@@ -49,14 +49,25 @@ void PresentMonClient::Sample(MetricSnapshot& snapshot) {
         }
     }
 
-    if (frametime_ms <= 0.0f) {
-        const auto now = std::chrono::steady_clock::now().time_since_epoch();
-        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-        frametime_ms = 16.60f + 1.2f * std::sin(static_cast<float>(ms) / 730.0f);
+    if (frametime_ms > 0.0f) {
+        PushFrametime(frametime_ms, snapshot);
+    } else {
+        snapshot.frametime_count = count_;
+        snapshot.frametime_history = frame_times_;
+        if (count_ > 0) {
+            const uint32_t last_index = write_index_ == 0 ? static_cast<uint32_t>(FrametimeHistorySize - 1) : write_index_ - 1;
+            snapshot.frametime_ms = frame_times_[last_index];
+            snapshot.fps = snapshot.frametime_ms > 0.0f ? 1000.0f / snapshot.frametime_ms : 0.0f;
+        }
     }
 
-    PushFrametime(frametime_ms, snapshot);
     ComputeLows(snapshot);
+}
+
+void PresentMonClient::RecordFrameTime(float frametime_ms) {
+    std::lock_guard lock(mutex_);
+    MetricSnapshot unused{};
+    PushFrametime(frametime_ms, unused);
 }
 
 void PresentMonClient::PushFrametime(float ms, MetricSnapshot& snapshot) {

@@ -19,7 +19,7 @@ void WidgetRegistry::Register(std::unique_ptr<IWidget> widget) {
     widgets_.push_back(std::move(widget));
 }
 
-void WidgetRegistry::RenderAll(const Telemetry::MetricSnapshot& snapshot, Config::Profile& profile) {
+void WidgetRegistry::RenderAll(const Telemetry::MetricSnapshot& snapshot, Config::Profile& profile, bool edit_mode) {
     for (auto& layout : profile.widgets) {
         if (!layout.enabled) {
             continue;
@@ -27,7 +27,7 @@ void WidgetRegistry::RenderAll(const Telemetry::MetricSnapshot& snapshot, Config
 
         IWidget* widget = Find(layout.id);
         if (widget) {
-            widget->Render(snapshot, layout);
+            widget->Render(snapshot, layout, edit_mode);
         }
     }
 }
@@ -38,4 +38,3 @@ IWidget* WidgetRegistry::Find(const std::string& id) {
 }
 
 } // namespace overlay::Widgets
-

@@ -39,8 +39,7 @@ private:
     ResizeCallback resize_callback_;
     UINT width_{1920};
     UINT height_{1080};
-    bool click_through_{true};
+    bool click_through_{false};
 };
 
 } // namespace overlay
-

@@ -8,16 +8,20 @@ namespace overlay::Widgets {
 
 namespace {
 
-bool BeginWidget(const char* title, Config::WidgetLayout& layout) {
+bool BeginWidget(const char* title, Config::WidgetLayout& layout, bool edit_mode) {
     ImGui::SetNextWindowPos(ImVec2(layout.position.x, layout.position.y), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(layout.size.x, layout.size.y), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowBgAlpha(layout.opacity);
     const std::string name = std::string(title) + "##" + layout.id;
-    return ImGui::Begin(name.c_str(), nullptr,
+    ImGuiWindowFlags flags =
         ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoSavedSettings |
-        ImGuiWindowFlags_NoFocusOnAppearing);
+        ImGuiWindowFlags_NoFocusOnAppearing;
+    if (!edit_mode) {
+        flags |= ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs;
+    }
+    return ImGui::Begin(name.c_str(), nullptr, flags);
 }
 
 void EndWidget(Config::WidgetLayout& layout) {
@@ -30,13 +34,13 @@ void EndWidget(Config::WidgetLayout& layout) {
 
 } // namespace
 
-void FpsWidget::Render(const Telemetry::MetricSnapshot& snapshot, Config::WidgetLayout& layout) {
-    if (!BeginWidget(Title(), layout)) {
+void FpsWidget::Render(const Telemetry::MetricSnapshot& snapshot, Config::WidgetLayout& layout, bool edit_mode) {
+    if (!BeginWidget(Title(), layout, edit_mode)) {
         EndWidget(layout);
         return;
     }
 
-    ImGui::TextDisabled("REAL-TIME");
+    ImGui::TextDisabled("RENDER LOOP");
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(0.05f, 0.82f, 1.0f, 1.0f), "FPS");
     ImGui::SetWindowFontScale(1.45f);
@@ -49,4 +53,3 @@ void FpsWidget::Render(const Telemetry::MetricSnapshot& snapshot, Config::Widget
 }
 
 } // namespace overlay::Widgets
-

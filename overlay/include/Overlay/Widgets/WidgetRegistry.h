@@ -14,7 +14,7 @@ class WidgetRegistry final {
 public:
     void RegisterDefaults();
     void Register(std::unique_ptr<IWidget> widget);
-    void RenderAll(const Telemetry::MetricSnapshot& snapshot, Config::Profile& profile);
+    void RenderAll(const Telemetry::MetricSnapshot& snapshot, Config::Profile& profile, bool edit_mode);
 
 private:
     IWidget* Find(const std::string& id);
@@ -24,4 +24,3 @@ private:
 };
 
 } // namespace overlay::Widgets
-

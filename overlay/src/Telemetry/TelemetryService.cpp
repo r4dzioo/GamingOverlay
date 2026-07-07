@@ -47,6 +47,10 @@ MetricSnapshot TelemetryService::Snapshot() const {
     return snapshot_;
 }
 
+void TelemetryService::RecordFrameTime(float frametime_ms) {
+    present_mon_.RecordFrameTime(frametime_ms);
+}
+
 void TelemetryService::ThreadMain() {
     using namespace std::chrono_literals;
 

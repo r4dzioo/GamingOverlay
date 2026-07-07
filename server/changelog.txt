@@ -1,18 +1,8 @@
-GamingOverlay 1.0.7
+GamingOverlay 1.0.8
 
-- Fixed Win32 window creation failing with GetLastError=1400 by assigning hwnd during WM_NCCREATE.
-- Overlay window creation now falls back through multiple Win32 modes instead of exiting immediately.
-- Overlay logs exact GetLastError values for failed window creation attempts.
-- Added an Uninstall button in the launcher.
-- Added a Start Menu uninstall shortcut.
-- Installer version now matches the release version.
-- Launcher now restarts itself automatically after a successful update.
-- Launcher now displays the exact Overlay.exe path, version, and file size before launch.
-- Improved missing Overlay.exe error text with the full expected path.
-- Changed Overlay.zip to an overlay-only update package so the running launcher does not overwrite its own loaded files.
-- Fixed release build CRT mismatch between Overlay.exe and imgui.lib.
-- Added DX11 hardware-to-WARP fallback so Overlay.exe can start on more systems.
-- Removed brittle DXGI mode-switch swap-chain flag from the transparent overlay path.
-- Statically linked the native overlay MSVC runtime.
-- Launcher now shows the tail of overlay.log when Overlay.exe exits unexpectedly.
-- Keeps the full v1.0.0 overlay, launcher, installer, and update pipeline scaffold.
+- Changed the overlay UI font to Segoe UI for a cleaner native Windows look.
+- Added widget edit mode: press F10, drag/resize widgets, then close settings to lock the overlay again.
+- Improved click-through behavior so the overlay does not block normal desktop/game input outside edit mode.
+- Reworked FPS tracking to use the overlay render loop frametime instead of a synthetic fallback.
+- Frametime graphs and 1%/0.1% lows now keep real render-loop samples even when PresentMon CSV data is unavailable.
+- Installer, launcher update metadata, and GitHub release assets now point to v1.0.8.

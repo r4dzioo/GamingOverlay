@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <iterator>
 #include <sstream>
+#include <string>
 
 namespace overlay {
 
@@ -18,6 +19,33 @@ std::wstring HResultText(HRESULT hr) {
     std::wstringstream stream;
     stream << L"0x" << std::hex << std::uppercase << static_cast<unsigned long>(hr);
     return stream.str();
+}
+
+std::string Narrow(const std::wstring& value) {
+    if (value.empty()) {
+        return {};
+    }
+
+    const int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (size <= 0) {
+        return {};
+    }
+
+    std::string result(static_cast<size_t>(size), '\0');
+    WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, result.data(), size, nullptr, nullptr);
+    result.resize(static_cast<size_t>(size - 1));
+    return result;
+}
+
+std::string SystemFontPath(const wchar_t* file_name) {
+    std::wstring windows_dir(MAX_PATH, L'\0');
+    const UINT length = GetWindowsDirectoryW(windows_dir.data(), static_cast<UINT>(windows_dir.size()));
+    if (length == 0 || length >= windows_dir.size()) {
+        return {};
+    }
+
+    windows_dir.resize(length);
+    return Narrow(windows_dir + L"\\Fonts\\" + file_name);
 }
 
 } // namespace
@@ -41,6 +69,21 @@ bool Dx11Renderer::Initialize(HWND hwnd, const Config::Theme& theme) {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
+
+    const std::string font_path = SystemFontPath(L"segoeui.ttf");
+    if (!font_path.empty()) {
+        ImFontConfig font_config{};
+        font_config.OversampleH = 2;
+        font_config.OversampleV = 2;
+        font_config.PixelSnapH = false;
+        ImFont* font = io.Fonts->AddFontFromFileTTF(font_path.c_str(), 16.0f, &font_config);
+        if (font) {
+            io.FontDefault = font;
+            Log::Info(L"Loaded Segoe UI overlay font.");
+        } else {
+            Log::Warn(L"Failed to load Segoe UI overlay font; using ImGui default font.");
+        }
+    }
 
     ApplyTheme(theme);
 
@@ -107,6 +150,8 @@ void Dx11Renderer::ApplyTheme(const Config::Theme& theme) {
     style.WindowPadding = ImVec2(14.0f, 12.0f);
     style.FramePadding = ImVec2(8.0f, 5.0f);
     style.ItemSpacing = ImVec2(8.0f, 7.0f);
+    style.AntiAliasedLines = true;
+    style.AntiAliasedFill = true;
 
     auto color = [](const Config::Color& c) { return ImVec4(c.r, c.g, c.b, c.a); };
     ImVec4* colors = style.Colors;
