@@ -59,7 +59,7 @@ void FrametimeWidget::Render(const Telemetry::MetricSnapshot& snapshot, Config::
         nullptr,
         0.0f,
         max_ms,
-        ImVec2(-1.0f, 78.0f));
+        ImVec2(-1.0f, ImGui::GetFontSize() * 4.9f));
 
     ImGui::TextDisabled("Lower and flatter is better");
     EndWidget(layout);

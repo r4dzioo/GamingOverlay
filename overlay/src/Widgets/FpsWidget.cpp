@@ -44,9 +44,7 @@ void FpsWidget::Render(const Telemetry::MetricSnapshot& snapshot, Config::Widget
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(0.05f, 0.82f, 1.0f, 1.0f), "GAME FPS");
     if (snapshot.has_game_frametime) {
-        ImGui::SetWindowFontScale(1.25f);
         ImGui::Text("%.0f", snapshot.fps);
-        ImGui::SetWindowFontScale(1.0f);
         ImGui::Text("1%% low %.0f   0.1%% low %.0f", snapshot.fps_1_percent_low, snapshot.fps_0_1_percent_low);
         ImGui::TextDisabled("%.2f ms frame", snapshot.frametime_ms);
     } else {

@@ -17,13 +17,16 @@
             <Setter Property="BorderBrush" Value="{StaticResource Accent}"/><Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Height" Value="46"/><Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6">
+                <Border x:Name="ButtonSurface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6" RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
                 <ControlTemplate.Triggers>
                     <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource AccentHover}"/></Trigger>
                     <Trigger Property="IsPressed" Value="True"><Setter Property="Opacity" Value="0.82"/></Trigger>
                     <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.38"/></Trigger>
+                    <EventTrigger RoutedEvent="MouseEnter"><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="ButtonSurface" Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="1.015" Duration="0:0:0.12"/><DoubleAnimation Storyboard.TargetName="ButtonSurface" Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="1.015" Duration="0:0:0.12"/></Storyboard></BeginStoryboard></EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave"><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="ButtonSurface" Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.16"/><DoubleAnimation Storyboard.TargetName="ButtonSurface" Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.16"/></Storyboard></BeginStoryboard></EventTrigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate></Setter.Value></Setter>
         </Style>
@@ -32,7 +35,8 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <Grid x:Name="LauncherShell" Opacity="0">
+        <Grid.RenderTransform><TranslateTransform Y="10"/></Grid.RenderTransform>
         <Grid.ColumnDefinitions><ColumnDefinition Width="210"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
         <Border Grid.Column="0" Background="#0D121C" BorderBrush="#1A2637" BorderThickness="0,0,1,0">
             <Grid Margin="26,28">
@@ -73,5 +77,11 @@
             </Grid>
             <StackPanel Grid.Row="2"><DockPanel Margin="0,0,0,8"><TextBlock Text="{Binding ProgressText}" Foreground="{StaticResource MutedText}" FontSize="12"/><TextBlock DockPanel.Dock="Right" Text="{Binding Progress, StringFormat={}{0:0}%}" Foreground="{StaticResource PrimaryText}" FontSize="12"/></DockPanel><ProgressBar Height="6" Minimum="0" Maximum="100" Value="{Binding Progress}" Foreground="{StaticResource Accent}" Background="#1A2433"/></StackPanel>
         </Grid>
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="FrameworkElement.Loaded"><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.22"/>
+                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)" To="0" Duration="0:0:0.22"/>
+            </Storyboard></BeginStoryboard></EventTrigger>
+        </Grid.Triggers>
     </Grid>
 </Window>

@@ -41,7 +41,7 @@ void CpuWidget::Render(const Telemetry::MetricSnapshot& snapshot, Config::Widget
     }
 
     ImGui::TextColored(ImVec4(0.05f, 0.82f, 1.0f, 1.0f), "CPU");
-    ImGui::ProgressBar(snapshot.cpu_usage_percent / 100.0f, ImVec2(-1.0f, 10.0f));
+    ImGui::ProgressBar(snapshot.cpu_usage_percent / 100.0f, ImVec2(-1.0f, ImGui::GetFontSize() * 0.62f));
     ImGui::Text("Usage %.0f%%", snapshot.cpu_usage_percent);
     ImGui::TextDisabled("Temp %.0f C   Clock %.0f MHz", snapshot.cpu_temperature_c, snapshot.cpu_clock_mhz);
     ImGui::TextDisabled("Disk R %.1f MB/s  W %.1f MB/s", snapshot.disk_read_mbps, snapshot.disk_write_mbps);

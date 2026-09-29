@@ -133,6 +133,8 @@ void Dx11Renderer::SetUiScale(float scale) {
         return;
     }
 
+    // Keep paddings, controls, and rounding proportional to the rasterized font.
+    ImGui::GetStyle().ScaleAllSizes(scale / ui_scale_);
     if (initialized_) {
         ImGui_ImplDX11_InvalidateDeviceObjects();
     }

@@ -1,7 +1,6 @@
-GamingOverlay 1.0.9
+GamingOverlay 1.0.10
 
-- Redesigned the launcher with a modern control-center layout, clearer session status, release notes, update progress, and uninstall access.
-- Rebuilt the overlay font atlas at the selected scale instead of bitmap-scaling text, making the interface sharper on Windows displays.
-- Corrected FPS telemetry: the game FPS, frametime graph, and low-FPS values now use only PresentMon samples.
-- When PresentMon data is not available, the overlay shows a waiting state rather than presenting the overlay render loop as game FPS.
-- Updated installer, launcher metadata, and GitHub release assets for v1.0.9.
+- Added subtle launch and button animations to the launcher interface.
+- Scaled ImGui padding, controls, rounding, graphs, and utilization bars together with the selected overlay font size.
+- Removed post-render FPS-number scaling so the text stays rasterized at its native sharpness.
+- Updated installer, launcher metadata, and GitHub release assets for v1.0.10.
