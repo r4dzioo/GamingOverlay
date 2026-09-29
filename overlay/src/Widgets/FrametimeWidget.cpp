@@ -42,6 +42,12 @@ void FrametimeWidget::Render(const Telemetry::MetricSnapshot& snapshot, Config::
 
     ImGui::TextColored(ImVec4(0.05f, 0.82f, 1.0f, 1.0f), "Frametime");
     ImGui::SameLine();
+    if (!snapshot.has_game_frametime) {
+        ImGui::TextDisabled("Waiting for PresentMon");
+        ImGui::TextDisabled("No game frametimes captured yet");
+        EndWidget(layout);
+        return;
+    }
     ImGui::TextDisabled("%.2f ms", snapshot.frametime_ms);
 
     const float max_ms = std::max(20.0f, snapshot.frametime_ms * 1.8f);

@@ -9,7 +9,6 @@
 #include "Overlay/Win32Window.h"
 
 #include <atomic>
-#include <chrono>
 #include <memory>
 
 namespace overlay {
@@ -29,7 +28,6 @@ private:
     bool Initialize(HINSTANCE instance, int show_command);
     void MainLoop();
     void RenderFrame();
-    void RecordFrameTiming();
     void ApplyHotkeys();
     void RenderSettingsWindow(const Telemetry::MetricSnapshot& snapshot);
 
@@ -45,7 +43,6 @@ private:
     bool overlay_visible_{true};
     bool settings_visible_{false};
     bool performance_mode_{false};
-    std::chrono::steady_clock::time_point last_frame_time_{};
 };
 
 } // namespace overlay

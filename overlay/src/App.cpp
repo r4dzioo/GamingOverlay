@@ -80,7 +80,6 @@ bool App::Initialize(HINSTANCE instance, int show_command) {
     window_.SetOpacity(profile.opacity);
 
     telemetry_.Start(app_dir);
-    last_frame_time_ = std::chrono::steady_clock::now();
     running_ = true;
     return true;
 }
@@ -124,14 +123,13 @@ void App::ApplyHotkeys() {
 }
 
 void App::RenderFrame() {
-    RecordFrameTiming();
     renderer_.BeginFrame();
 
     if (overlay_visible_) {
         auto profile = config_.ActiveProfile();
         const auto snapshot = telemetry_.Snapshot();
 
-        ImGui::GetIO().FontGlobalScale = profile.global_scale;
+        renderer_.SetUiScale(profile.global_scale);
         widgets_.RenderAll(snapshot, profile, settings_visible_);
         for (const auto& layout : profile.widgets) {
             config_.UpdateWidgetLayout(layout);
@@ -145,18 +143,6 @@ void App::RenderFrame() {
     renderer_.EndFrame(performance_mode_);
 }
 
-void App::RecordFrameTiming() {
-    const auto now = std::chrono::steady_clock::now();
-    if (last_frame_time_.time_since_epoch().count() != 0) {
-        const auto elapsed = std::chrono::duration<float, std::milli>(now - last_frame_time_);
-        const float frametime_ms = elapsed.count();
-        if (frametime_ms > 0.05f && frametime_ms < 1000.0f) {
-            telemetry_.RecordFrameTime(frametime_ms);
-        }
-    }
-    last_frame_time_ = now;
-}
-
 void App::RenderSettingsWindow(const Telemetry::MetricSnapshot& snapshot) {
     auto profile = config_.ActiveProfile();
 
@@ -164,7 +150,11 @@ void App::RenderSettingsWindow(const Telemetry::MetricSnapshot& snapshot) {
     ImGui::Begin("GamingOverlay Settings", &settings_visible_, ImGuiWindowFlags_NoCollapse);
 
     ImGui::TextColored(ImVec4(0.05f, 0.82f, 1.0f, 1.0f), "Runtime");
-    ImGui::Text("FPS %.0f   Frametime %.2f ms", snapshot.fps, snapshot.frametime_ms);
+    if (snapshot.has_game_frametime) {
+        ImGui::Text("Game FPS %.0f   Frametime %.2f ms", snapshot.fps, snapshot.frametime_ms);
+    } else {
+        ImGui::TextDisabled("Game FPS waiting for PresentMon data");
+    }
     ImGui::TextDisabled("F10 edit mode unlocks widgets. Close settings to make overlay click-through.");
     ImGui::Checkbox("Performance mode", &performance_mode_);
 

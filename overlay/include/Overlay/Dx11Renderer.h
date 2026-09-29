@@ -25,6 +25,7 @@ public:
     void BeginFrame();
     void EndFrame(bool performance_mode);
     void ApplyTheme(const Config::Theme& theme);
+    void SetUiScale(float scale);
 
     ID3D11Device* Device() const { return device_.Get(); }
     ID3D11DeviceContext* Context() const { return context_.Get(); }
@@ -33,6 +34,7 @@ private:
     bool CreateDeviceAndSwapChain(HWND hwnd);
     bool CreateRenderTarget();
     void ReleaseRenderTarget();
+    void RebuildFontAtlas(float scale);
 
     Microsoft::WRL::ComPtr<ID3D11Device> device_;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context_;
@@ -41,6 +43,8 @@ private:
 
     HWND hwnd_{nullptr};
     bool initialized_{false};
+    float ui_scale_{1.0f};
+    std::string font_path_;
     std::chrono::steady_clock::time_point last_present_{};
 };
 

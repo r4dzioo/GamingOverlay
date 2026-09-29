@@ -1,8 +1,7 @@
-GamingOverlay 1.0.8
+GamingOverlay 1.0.9
 
-- Changed the overlay UI font to Segoe UI for a cleaner native Windows look.
-- Added widget edit mode: press F10, drag/resize widgets, then close settings to lock the overlay again.
-- Improved click-through behavior so the overlay does not block normal desktop/game input outside edit mode.
-- Reworked FPS tracking to use the overlay render loop frametime instead of a synthetic fallback.
-- Frametime graphs and 1%/0.1% lows now keep real render-loop samples even when PresentMon CSV data is unavailable.
-- Installer, launcher update metadata, and GitHub release assets now point to v1.0.8.
+- Redesigned the launcher with a modern control-center layout, clearer session status, release notes, update progress, and uninstall access.
+- Rebuilt the overlay font atlas at the selected scale instead of bitmap-scaling text, making the interface sharper on Windows displays.
+- Corrected FPS telemetry: the game FPS, frametime graph, and low-FPS values now use only PresentMon samples.
+- When PresentMon data is not available, the overlay shows a waiting state rather than presenting the overlay render loop as game FPS.
+- Updated installer, launcher metadata, and GitHub release assets for v1.0.9.

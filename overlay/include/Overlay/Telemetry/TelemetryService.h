@@ -24,7 +24,6 @@ public:
     void Stop();
 
     MetricSnapshot Snapshot() const;
-    void RecordFrameTime(float frametime_ms);
 
 private:
     void ThreadMain();

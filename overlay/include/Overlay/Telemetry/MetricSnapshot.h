@@ -15,6 +15,7 @@ struct MetricSnapshot final {
     float fps_1_percent_low{0.0f};
     float fps_0_1_percent_low{0.0f};
     float frametime_ms{0.0f};
+    bool has_game_frametime{false};
     std::array<float, FrametimeHistorySize> frametime_history{};
     uint32_t frametime_count{0};
 

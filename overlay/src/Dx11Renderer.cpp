@@ -8,6 +8,8 @@
 
 #include <iomanip>
 #include <iterator>
+#include <algorithm>
+#include <cmath>
 #include <sstream>
 #include <string>
 
@@ -70,20 +72,8 @@ bool Dx11Renderer::Initialize(HWND hwnd, const Config::Theme& theme) {
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
 
-    const std::string font_path = SystemFontPath(L"segoeui.ttf");
-    if (!font_path.empty()) {
-        ImFontConfig font_config{};
-        font_config.OversampleH = 2;
-        font_config.OversampleV = 2;
-        font_config.PixelSnapH = false;
-        ImFont* font = io.Fonts->AddFontFromFileTTF(font_path.c_str(), 16.0f, &font_config);
-        if (font) {
-            io.FontDefault = font;
-            Log::Info(L"Loaded Segoe UI overlay font.");
-        } else {
-            Log::Warn(L"Failed to load Segoe UI overlay font; using ImGui default font.");
-        }
-    }
+    font_path_ = SystemFontPath(L"segoeui.ttf");
+    RebuildFontAtlas(1.0f);
 
     ApplyTheme(theme);
 
@@ -135,6 +125,45 @@ void Dx11Renderer::EndFrame(bool performance_mode) {
     const UINT sync_interval = performance_mode ? 0U : 1U;
     swap_chain_->Present(sync_interval, 0);
     last_present_ = std::chrono::steady_clock::now();
+}
+
+void Dx11Renderer::SetUiScale(float scale) {
+    scale = std::clamp(scale, 0.75f, 1.75f);
+    if (std::abs(scale - ui_scale_) < 0.025f) {
+        return;
+    }
+
+    if (initialized_) {
+        ImGui_ImplDX11_InvalidateDeviceObjects();
+    }
+    RebuildFontAtlas(scale);
+    if (initialized_) {
+        ImGui_ImplDX11_CreateDeviceObjects();
+    }
+}
+
+void Dx11Renderer::RebuildFontAtlas(float scale) {
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear();
+
+    ImFontConfig font_config{};
+    font_config.OversampleH = 3;
+    font_config.OversampleV = 2;
+    font_config.PixelSnapH = true;
+    const float font_size = 16.0f * scale;
+
+    ImFont* font = nullptr;
+    if (!font_path_.empty()) {
+        font = io.Fonts->AddFontFromFileTTF(font_path_.c_str(), font_size, &font_config);
+    }
+    if (!font) {
+        font = io.Fonts->AddFontDefault();
+        Log::Warn(L"Segoe UI is unavailable; using the Dear ImGui fallback font.");
+    }
+
+    io.FontDefault = font;
+    io.FontGlobalScale = 1.0f;
+    ui_scale_ = scale;
 }
 
 void Dx11Renderer::ApplyTheme(const Config::Theme& theme) {
